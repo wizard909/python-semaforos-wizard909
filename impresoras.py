@@ -1,3 +1,4 @@
+
 import threading
 import time
 import logging
@@ -21,19 +22,26 @@ class Computadora(threading.Thread):
   def run(self):
     # Tomo una impresora de la lista.
     # (Esta línea va a fallar si no quedan impresoras, agregar sincronización para que no pase)
-    impresora = impresorasDisponibles.pop()
+  
+    try:
+      semaforo.acquire()
+      impresora = impresorasDisponibles.pop()
     # La utilizo.
-    impresora.imprimir(self.texto)
-    # La vuelvo a dejar en la lista para que la use otro.
-    impresorasDisponibles.append(impresora)
+      impresora.imprimir(self.texto)
+    finally:
+    #La vuelvo a dejar en la lista para que la use otro.
+      impresorasDisponibles.append(impresora)
+      semaforo.release()
 
 impresorasDisponibles = []
 for i in range(3):
   # Creo tres impresoras y las meto en la lista. Se puede cambiar el 3 por otro número para hacer pruebas.
   impresorasDisponibles.append(Impresora(i))
 
+semaforo = threading.Semaphore(3)
+
 Computadora('hola').start()
-Computadora('qué tal').start()
+Computadora('que tal').start()
 Computadora('todo bien').start()
 Computadora('esta explota').start()
-Computadora('esta también').start()
+Computadora('esta tambien').start()
